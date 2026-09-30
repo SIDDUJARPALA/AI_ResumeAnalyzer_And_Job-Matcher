@@ -1,0 +1,13 @@
+Junior Backend Developer
+
+Responsibilities
+- Build and maintain Python web services and REST APIs.
+- Work with relational databases and write SQL queries.
+- Collaborate with engineers using Git and code reviews.
+- Document and test software features.
+
+Required qualifications
+- 2 or more years of software development experience.
+- Strong Python and SQL skills.
+- A bachelor's degree in Computer Science or a related field.
+- Experience with Flask is preferred.

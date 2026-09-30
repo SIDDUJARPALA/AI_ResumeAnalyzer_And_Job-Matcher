@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Analyze your resume{% endblock %}
+{% block topbar_title %}New analysis{% endblock %}
+{% block content %}
+<section class="welcome-heading">
+  <div class="assistant-mark" aria-hidden="true">✳</div>
+  <h1>AI Resume Analyzer &amp; Job Matcher</h1>
+  <p>Upload your resume and add a job description or requirements to get a transparent match analysis.</p>
+</section>
+
+<section class="composer-wrap">
+  <form class="composer" action="{{ url_for('resume.analyze_form') }}" method="post" enctype="multipart/form-data" data-analysis-form>
+    <div class="composer-file" data-drop-zone>
+      <label class="file-button" for="resume" aria-label="Attach your resume">
+        <span aria-hidden="true">＋</span>
+        <input class="visually-hidden" id="resume" name="resume" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required>
+      </label>
+      <span class="file-label" data-file-label>Attach resume (PDF or DOCX)</span>
+      <span class="file-size">Up to 8 MB</span>
+    </div>
+    <label class="composer-field-label" for="job_description">Job description or requirements</label>
+    <textarea class="form-control composer-input" id="job_description" name="job_description" maxlength="20000" placeholder="Paste the job description, or enter the role requirements, skills, experience, education and responsibilities..." required>{{ job_description or '' }}</textarea>
+    <div class="composer-footer">
+      <span class="composer-note"><span aria-hidden="true">↳</span> Resume text is sent to {{ llm_provider_name }} for analysis.</span>
+      <span class="composer-actions">
+        <span class="char-count" data-char-count>0 / 20,000</span>
+        <button class="send-button" type="submit" aria-label="Analyze resume and match job" data-submit-button>
+          <span data-submit-label>Analyze resume</span>
+          <span class="spinner-border spinner-border-sm ms-1 d-none" aria-hidden="true" data-spinner></span>
+          <span aria-hidden="true" class="send-arrow">↑</span>
+        </button>
+      </span>
+    </div>
+  </form>
+  <div class="upload-error" role="alert" aria-live="polite" data-upload-error hidden></div>
+  {% if error %}
+    <div class="alert alert-danger mt-3" role="alert">{{ error }}</div>
+  {% endif %}
+  <div class="composer-footnote">PDF or DOCX resume · Add job description or requirements · Scanned image-only PDFs aren't supported</div>
+</section>
+
+<section class="starter-prompts" aria-label="Task 3 application features">
+  <div class="starter-card" role="group" aria-label="Understand your match">
+    <span class="starter-icon" aria-hidden="true">01</span>
+    <span><strong>Resume analysis &amp; job match</strong><small>See extracted experience, skills and an explained score.</small></span>
+    <span class="starter-arrow" aria-hidden="true">↗</span>
+  </div>
+  <div class="starter-card" role="group" aria-label="Find skills to highlight">
+    <span class="starter-icon" aria-hidden="true">02</span>
+    <span><strong>Skill gap analysis</strong><small>Compare required skills with what your resume shows.</small></span>
+    <span class="starter-arrow" aria-hidden="true">↗</span>
+  </div>
+  <div class="starter-card" role="group" aria-label="Prepare your application">
+    <span class="starter-icon" aria-hidden="true">03</span>
+    <span><strong>Application recommendations</strong><small>Improve your resume, prepare for interviews and draft a cover letter.</small></span>
+    <span class="starter-arrow" aria-hidden="true">↗</span>
+  </div>
+</section>
+
+<section class="privacy-strip">
+  <span aria-hidden="true">♧</span>
+  <p><strong>Your resume stays in your control.</strong> Resume text is sent to {{ llm_provider_name }} for analysis and is not saved by this app. Only your structured analysis is stored locally. Delete the report when you're done.</p>
+</section>
+{% endblock %}

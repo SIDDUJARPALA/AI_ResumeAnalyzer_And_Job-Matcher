@@ -1,0 +1,20 @@
+FICTIONAL SAMPLE CANDIDATE — FOR TESTING ONLY
+
+Jordan Lee
+Junior Software Developer
+
+Skills
+Python, Flask, SQL, Git, HTML, CSS, JavaScript
+
+Experience
+Software Developer Intern, Northstar Labs, June 2024 – May 2025
+- Built a Flask REST API for internal inventory tracking.
+- Wrote SQL queries for reporting and data cleanup.
+- Collaborated with a three-person engineering team using Git.
+
+Projects
+Job Application Tracker
+- Created a personal Flask application with a SQLite database and HTML templates.
+
+Education
+Bachelor of Science in Computer Science, Example State University, May 2024

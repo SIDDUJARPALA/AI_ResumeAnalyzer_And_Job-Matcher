@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Report not found{% endblock %}
+{% block content %}
+<section class="panel-card text-center py-5">
+  <div class="section-kicker">404 · NOT FOUND</div>
+  <h1 class="page-title mt-2">This report isn't available.</h1>
+  <p class="text-secondary">It may have been deleted or the link may be incorrect.</p>
+  <a class="btn btn-primary mt-2" href="{{ url_for('resume.index') }}">Start a new analysis</a>
+</section>
+{% endblock %}

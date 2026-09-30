@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}Analysis results{% endblock %}
+{% block topbar_title %}Analysis report{% endblock %}
+{% block content %}
+<div class="results-toolbar">
+  <div>
+    <div class="report-breadcrumb"><a class="back-link" href="{{ url_for('resume.index') }}">← New analysis</a><span aria-hidden="true">/</span><span>Results</span></div>
+    <div class="report-heading">
+      <div>
+        <h1 class="page-title mt-2 mb-1">{{ analysis.job.title or 'Your match report' }}</h1>
+        <p class="text-secondary mb-0">Resume analysis for <strong>{{ analysis.file_name }}</strong></p>
+      </div>
+      <span class="fit-badge fit-neutral">
+        {% if analysis.match.score is not none %}Score based on stated criteria{% else %}No score: job criteria not identified{% endif %}
+      </span>
+    </div>
+  </div>
+  <div class="results-actions">
+    <a class="btn btn-primary" href="{{ url_for('resume.download_report', analysis_id=analysis.id) }}"><span aria-hidden="true">↓</span> Download report</a>
+    <a class="btn btn-outline-primary" href="{{ url_for('jobs.get_analysis_api', analysis_id=analysis.id) }}" target="_blank" rel="noopener">View JSON <span aria-hidden="true">↗</span></a>
+  </div>
+</div>
+
+<section class="overview-strip" aria-label="Analysis summary">
+  <div class="overview-item"><span class="overview-icon" aria-hidden="true">✓</span><span><strong>{{ analysis.match.matched_skills|length }}</strong><small>required skills matched</small></span></div>
+  <div class="overview-item"><span class="overview-icon overview-icon-warn" aria-hidden="true">!</span><span><strong>{{ analysis.match.missing_skills|length }}</strong><small>skills not evident</small></span></div>
+  <div class="overview-item"><span class="overview-icon overview-icon-neutral" aria-hidden="true">◷</span><span><strong>{{ analysis.resume.experience_years ~ ' yrs' if analysis.resume.experience_years is not none else 'Not stated' }}</strong><small>experience in resume</small></span></div>
+</section>
+
+<div class="results-grid">
+  <section class="panel-card score-card">
+    <div class="panel-heading">
+      <div><div class="section-kicker">JOB MATCHING ANALYSIS</div><h2 class="panel-title">Transparent match score</h2></div>
+      <span class="info-mark" title="The score uses only explicit criteria found in the job description.">i</span>
+    </div>
+    <div class="score-summary">
+      {% if analysis.match.score is not none %}
+        <div class="score-ring" style="--score: {{ analysis.match.score }}%" role="img" aria-label="{{ analysis.match.score }} percent overall match">
+          <div class="score-ring-center"><span>{{ analysis.match.score }}</span><small>out of 100</small></div>
+        </div>
+      {% else %}
+        <div class="score-ring score-ring-empty" role="img" aria-label="Match score not available"><div class="score-ring-center"><span>—</span><small>not scored</small></div></div>
+      {% endif %}
+      <div class="score-summary-copy">
+        {% if analysis.match.score is not none %}
+          <strong>Weighted match against the stated job criteria</strong>
+        {% else %}
+          <strong>We need clearer job criteria</strong>
+        {% endif %}
+        <p>{{ analysis.match.explanation }}</p>
+      </div>
+    </div>
+    <details class="scoring-details">
+      <summary>How we calculate this score</summary>
+      <p>{{ analysis.match.score_method }}</p>
+    </details>
+  </section>
+  <section class="panel-card">
+    <div class="panel-heading">
+      <div><div class="section-kicker">THE DETAILS</div><h2 class="panel-title">Match breakdown</h2></div>
+      <span class="panel-caption">Weighted by job criteria</span>
+    </div>
+    {% if analysis.match.component_scores %}
+      <div class="criteria-list">
+        {% for name, component in analysis.match.component_scores.items() %}
+          <article class="criteria-item">
+            <div class="criteria-topline">
+              <div>
+                <h3>{{ {'skills': 'Required skills', 'experience': 'Relevant experience', 'education': 'Education'}[name] }}</h3>
+                <p>
+                  {% if name == 'skills' %}
+                    {{ component.matched|length }} of {{ component.criteria_count }} requirements found
+                  {% elif name == 'experience' %}
+                    {{ component.candidate_years if component.candidate_years is not none else 'Not stated' }} of {{ component.required_years }} years
+                  {% else %}
+                    {{ component.candidate_education|join(', ') if component.candidate_education else 'Not stated' }}
+                  {% endif %}
+                </p>
+              </div>
+              <div class="criteria-score"><strong>{{ component.score }}%</strong><small>{{ component.weight }}% weight</small></div>
+            </div>
+            <div class="criteria-progress" role="progressbar" aria-label="{{ name }} match score" aria-valuenow="{{ component.score }}" aria-valuemin="0" aria-valuemax="100">
+              <span style="width: {{ component.score }}%"></span>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="no-score-state">
+        <span class="no-score-icon" aria-hidden="true">↗</span>
+        <div><strong>No explicit criteria found</strong><p>Try a job description that lists required skills, experience, or education. Without criteria, a numeric score would be misleading.</p></div>
+      </div>
+    {% endif %}
+  </section>
+</div>
+
+<div class="results-grid detail-grid">
+  <section class="panel-card">
+      <div class="section-kicker">FROM YOUR RESUME</div>
+      <h2 class="detail-title">{{ analysis.resume.name or 'Candidate profile' }}</h2>
+      {% if analysis.resume.headline %}<p class="detail-subtitle">{{ analysis.resume.headline }}</p>{% endif %}
+      <div class="data-pair"><strong>Experience</strong><span>{{ analysis.resume.experience_years ~ ' years' if analysis.resume.experience_years is not none else 'Not stated' }}</span></div>
+      {{ list_section('Skills in resume', analysis.resume.skills) }}
+      {{ list_section('Education', analysis.resume.education) }}
+      {{ list_section('Experience summary', analysis.resume.experience_summary) }}
+      {{ list_section('Projects', analysis.resume.projects) }}
+      {{ list_section('Evidence-based strengths', analysis.resume.strengths) }}
+  </section>
+  <section class="panel-card">
+      <div class="section-kicker">FROM THE JOB DESCRIPTION</div>
+      <h2 class="detail-title">{{ analysis.job.title or 'Target role' }}</h2>
+      <div class="data-pair"><strong>Minimum experience</strong><span>{{ analysis.job.minimum_experience_years ~ ' years' if analysis.job.minimum_experience_years is not none else 'Not stated' }}</span></div>
+      {% if analysis.job.required_education %}<div class="data-pair"><strong>Required education</strong><span>{{ analysis.job.required_education }}</span></div>{% endif %}
+      {{ list_section('Required skills found in resume', analysis.match.matched_skills) }}
+      {{ list_section('Skills not evident in resume', analysis.match.missing_skills) }}
+      {{ list_section('Key responsibilities', analysis.job.key_responsibilities) }}
+      <div class="caution-box mt-4">“Not evident” means the resume analysis did not find that requirement. It does not mean you lack the skill. Add it only if you have it.</div>
+  </section>
+  <section class="panel-card full-width">
+      <div class="section-kicker">NEXT STEPS</div>
+      <h2 class="detail-title">Resume improvement recommendations</h2>
+      <ol class="recommendation-list">
+        {% for suggestion in (analysis.refinement.revised_suggestions if analysis.refinement else analysis.recommendations.resume_improvements) %}
+          <li>{{ suggestion }}</li>
+        {% else %}<li>No suggestions were returned for this resume.</li>{% endfor %}
+      </ol>
+      {% if analysis.refinement %}
+        <p class="small text-secondary mb-0"><strong>Refined using your feedback:</strong> {{ analysis.refinement.feedback }}</p>
+      {% endif %}
+      {% if analysis.refinement_history|length > 1 %}
+        <details class="refine-history mt-3">
+          <summary>View {{ analysis.refinement_history|length }} refinement rounds</summary>
+          <ol class="recommendation-list mt-2">
+            {% for round in analysis.refinement_history %}
+              <li><strong>Feedback:</strong> {{ round.feedback }}</li>
+            {% endfor %}
+          </ol>
+        </details>
+      {% endif %}
+      <details class="refine-box mt-4">
+        <summary>Refine these suggestions with feedback</summary>
+        <form class="mt-3" action="{{ url_for('resume.refine', analysis_id=analysis.id) }}" method="post">
+          <label class="form-label" for="feedback">What would you like to change or focus on?</label>
+          <textarea class="form-control" id="feedback" name="feedback" maxlength="2000" rows="3" placeholder="For example: focus on making the suggestions more concise." required></textarea>
+          <button class="btn btn-outline-primary mt-3" type="submit">Refine suggestions</button>
+        </form>
+      </details>
+  </section>
+  <section class="panel-card">
+      <div class="section-kicker">INTERVIEW PREPARATION</div>
+      <h2 class="detail-title">Questions to practice</h2>
+      <ol class="recommendation-list">
+        {% for question in analysis.recommendations.interview_questions %}<li>{{ question }}</li>
+        {% else %}<li>No interview questions were returned.</li>{% endfor %}
+      </ol>
+  </section>
+  <section class="panel-card">
+      <div class="section-kicker">COVER LETTER GENERATION</div>
+      <h2 class="detail-title">A tailored starting draft</h2>
+      <div class="cover-letter">{{ analysis.recommendations.cover_letter }}</div>
+      <p class="small text-secondary mt-3 mb-0">Review and personalize this draft before sending. Verify that every claim is accurate.</p>
+  </section>
+  <section class="delete-panel full-width">
+      <div><strong>Delete this saved analysis</strong><p class="small text-secondary mb-0">Removes the structured report from this app's SQLite database.</p></div>
+      <form action="{{ url_for('resume.remove_analysis', analysis_id=analysis.id) }}" method="post" data-confirm-delete>
+        <button class="btn btn-outline-danger" type="submit">Delete report</button>
+      </form>
+  </section>
+</div>
+{% endblock %}
+
+{% macro list_section(title, items) %}
+  <h3 class="section-label mt-4">{{ title }}</h3>
+  {% if items %}
+    <ul class="clean-list{% if title == 'Skills in resume' or title == 'Required skills found in resume' or title == 'Skills not evident in resume' %} skill-list{% endif %}">{% for item in items %}<li>{{ item }}</li>{% endfor %}</ul>
+  {% else %}<p class="small text-secondary mb-0">Not identified in the supplied text.</p>{% endif %}
+{% endmacro %}
