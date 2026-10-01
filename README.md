@@ -1,4 +1,5 @@
 # CareerLens: AI Resume Analyzer & Job Matcher
+<img width="1920" height="1020" alt="Image" src="https://github.com/user-attachments/assets/e307d8b4-0178-44dd-88ed-ea02ae2d7ec6" />
 
 CareerLens is a Flask web application for analyzing PDF/DOCX resumes against a job description. It uses Groq for evidence-grounded resume and job-description analysis, then calculates a transparent match score in Python. The results include skill gaps, improvement suggestions, interview questions, a customized cover letter, structured JSON, iterative suggestion refinement, and a downloadable PDF report.
 
